@@ -1,0 +1,13 @@
+from setuptools import setup
+
+setup(name='params_mot',
+      version='0.1',
+      description='Package to estimate MOT temperature',
+      url='https://github.com/p201-sp2016/params_MOT',
+      author='AAG',
+      author_email='danielang@g.harvard.edu',
+      license='GPL',
+      packages=['params_mot'],
+	  install_requires=[
+          'numpy','matplotlib','scipy','pandas','lmfit','seaborn'],
+      zip_safe=False)
