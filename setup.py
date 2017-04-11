@@ -9,5 +9,6 @@ setup(name='params_mot',
       license='GPL',
       packages=['params_mot'],
 	  install_requires=[
-          'numpy','matplotlib','scipy','pandas','lmfit','seaborn'],
-      zip_safe=False)
+          'numpy','matplotlib','scipy'],
+	  zip_safe=False,
+	  )
