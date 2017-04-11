@@ -17,5 +17,7 @@ class BasicFunctionsTestCase(unittest.TestCase):
 		self.assertTrue=(pm.MOTmodel(1,1,1,1,1,1,1))
 	def test_detected(self):
 		self.assertTrue=(pm.detected(1))
+	def test_likelihood(self):
+		self.assertTrue=(pm.log_likelihood(1, 1, 1, 1, 1, 1, 1, [1,1,1,1,1,1]))
 if __name__ == '__main__':
 	unittest.main()
