@@ -8,7 +8,5 @@ setup(name='params_mot',
       author_email='danielang@g.harvard.edu',
       license='GPL',
       packages=['params_mot'],
-	  install_requires=[
-          'numpy','matplotlib','scipy'],
 	  zip_safe=False,
 	  )
