@@ -1,0 +1,8 @@
+setup.py
+params_mot/__init__.py
+params_mot.egg-info/PKG-INFO
+params_mot.egg-info/SOURCES.txt
+params_mot.egg-info/dependency_links.txt
+params_mot.egg-info/not-zip-safe
+params_mot.egg-info/requires.txt
+params_mot.egg-info/top_level.txt
