@@ -1,4 +1,7 @@
 import numpy as np
+import os
+from numpy import loadtxt
+from params_MOT import MOT_image
 
 def gaussian_1d(z, center_z, sigma_z, amplitude):
     return amplitude*np.exp(-(z-center_z)**2/(2*sigma_z**2))
@@ -36,4 +39,25 @@ def log_likelihood(x, y, z, sigma_m, sigma_g, mu_f, mu_sct, theta):
     prob_gaussian = gaussian_1d(z, model(x, y, theta), sigma, 1) 
     prob_poisson = np.random.poisson(mu_f) + np.random.poisson(mu_sct)
     
-    return np.sum(np.log(prob_gaussian + prob_poisson)) 
+    return np.sum(np.log(prob_gaussian + prob_poisson))
+
+def get_data_file_path(filename = 'model_data.csv', data_dir=''):
+    # __file__ is the location of the source file currently in use (so
+    # in this case io.py). We can use it as base path to construct
+    # other paths from that should end up correct on other machines or
+    # when the package is installed
+    start = os.path.abspath(__file__)
+    start_dir = os.path.dirname(start)
+    # If you need to go up another directory (for example if you have
+    # this function in your tests directory and your data is in the
+    # package directory one level up) you can use
+    # up_dir = os.path.split(start_dir)[0]
+    data_dir = os.path.join(start_dir, data_dir)
+    return os.path.join(start_dir, data_dir, filename)
+
+def load_data(data_file, delim = ' '):
+    return loadtxt(data_file, delimiter = delim)
+
+def load_image(data, image_size = 50):
+    image_data = data.reshape(image_size, image_size)
+    return MOT_image.MOT_image(image_data)

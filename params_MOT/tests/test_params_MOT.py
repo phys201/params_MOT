@@ -1,6 +1,5 @@
 import unittest
 import numpy as np
-
 import params_MOT as pm
 
 class BasicFunctionsTestCase(unittest.TestCase):
@@ -19,5 +18,9 @@ class BasicFunctionsTestCase(unittest.TestCase):
 		self.assertTrue=(pm.detected(1))
 	def test_likelihood(self):
 		self.assertTrue=(pm.log_likelihood(1, 1, 1, 1, 1, 1, 1, [1,1,1,1,1,1]))
+	def test_likelihood(self):
+		self.assertTrue = (pm.log_likelihood(1, 1, 1, 1, 1, 1, 1, [1, 1, 1, 1, 1, 1]))
+	def test_load_data(self):
+		self.assertTrue(pm.load_data('file', delim=' '))
 if __name__ == '__main__':
 	unittest.main()
