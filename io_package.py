@@ -1,5 +1,6 @@
 import os
 from numpy import loadtxt
+from params_MOT import MOT_image
 
 def get_data_file_path(filename = 'model_data.csv', data_dir=''):
     # __file__ is the location of the source file currently in use (so
@@ -17,3 +18,7 @@ def get_data_file_path(filename = 'model_data.csv', data_dir=''):
 
 def load_data(data_file, delim = ' '):
     return loadtxt(data_file, delimiter = delim)
+
+def load_image(data, image_size = 50):
+    image_data = data.reshape(image_size, image_size)
+    return MOT_image.MOT_image(image_data)
