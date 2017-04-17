@@ -1,7 +1,6 @@
 import numpy as np
 import os
 from numpy import loadtxt
-from params_MOT import MOT_image
 
 def gaussian_1d(z, center_z, sigma_z, amplitude):
     return amplitude*np.exp(-(z-center_z)**2/(2*sigma_z**2))
@@ -58,6 +57,29 @@ def get_data_file_path(filename = 'model_data.csv', data_dir=''):
 def load_data(data_file, delim = ' '):
     return loadtxt(data_file, delimiter = delim)
 
+class MOT_image:
+    '''
+    data: numpy 2D array containing the photon count for the (x,y) pixel
+    time: duration since MOT has been released from trap
+    '''
+
+    #def __init__(self, data, time):
+    def __init__(self, data, image_size = 50):
+        data.reshape(image_size, image_sizes)
+        self.data = data
+        #self.time = time
+
+    def show(self, image_size=50, gauss_filter=False):
+
+        if gauss_filter == False:
+            plt.figure(1)
+            plt.imshow(self.data, cmap="jet", interpolation='none')
+            plt.colorbar()
+        else:
+            plt.figure(1)
+            plt.imshow(filters.gaussian_filter(self.data, 1), cmap="jet", interpolation='none')
+            plt.colorbar()
+	
 def load_image(data, image_size = 50):
     image_data = data.reshape(image_size, image_size)
     return MOT_image.MOT_image(image_data)
