@@ -1,6 +1,7 @@
 import unittest
 import numpy as np
 import params_MOT as pm
+import os
 
 class BasicFunctionsTestCase(unittest.TestCase):
 	"Tests for basic functions in __init__.py of params_MOT. Ensures that each function returns a number/array instead of an error."
@@ -21,6 +22,9 @@ class BasicFunctionsTestCase(unittest.TestCase):
 	def test_likelihood(self):
 		self.assertTrue = (pm.log_likelihood(1, 1, 1, 1, 1, 1, 1, [1, 1, 1, 1, 1, 1]))
 	def test_load_data(self):
-		self.assertTrue(pm.load_data('file', delim=' '))
+		os.chdir('../..') # Change working directory to that containing model_data.csv, which is right in the params_MOT directory
+		mot_data = pm.load_data('model_data.csv', delim=' ')
+		self.assertTrue(np.sum(mot_data))
+		os.chdir('./params_MOT/tests/') #Change working directory back
 if __name__ == '__main__':
 	unittest.main()
