@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
-from params_MOT import params_MOT as pm
-from io_package import *
+import params_MOT as pm
+from params_MOT.io_package import *
 import os
 
 class BasicFunctionsTestCase(unittest.TestCase):
