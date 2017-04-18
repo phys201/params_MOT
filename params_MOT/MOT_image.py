@@ -17,7 +17,7 @@ class MOT_image:
 
     #def __init__(self, data, time):
     def __init__(self, data, image_size = 50):
-        data.reshape(image_size, image_sizes)
+        data.reshape(image_size, image_size)
         self.data = data
         #self.time = time
 
