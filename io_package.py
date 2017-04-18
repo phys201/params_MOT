@@ -21,4 +21,4 @@ def load_data(data_file, delim = ' '):
 
 def load_image(data, image_size = 50):
     image_data = data.reshape(image_size, image_size)
-    return MOT_image.MOT_image(image_data)
+    return MOT_image(image_data)
