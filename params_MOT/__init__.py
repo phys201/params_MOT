@@ -46,7 +46,7 @@ def log_likelihood(theta, x, y, data):
     #return -0.5*(np.sum((data[x-1][y-1] - MOT_model(x, y, theta))**2/(sigma_m**2 + sigma_g**2) + np.log(sigma_m**2 + sigma_g**2)))
     for i in x:
         for j in y:
-            return -0.5*(np.sum((data[int(i)-1][int(j)-1] - MOT_model(x, y, theta))**2/(sigma_m**2 + sigma_g**2) + np.log(sigma_m**2 + sigma_g**2)))
+            return -0.5*(np.sum((data[int(i)-1][int(j)-1] - MOT_model(x, y, theta))**2/(sigma_m**2 + sigma_g**2) - np.log(sigma_m**2 + sigma_g**2)))
     
 def log_prior(theta):
     """
