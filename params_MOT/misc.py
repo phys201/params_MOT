@@ -4,6 +4,4 @@ def MOT_model(x, y, theta):
     # Use 40 for the readout_charge for now
     return Image_with_CCD_readout_charge(MOT_bare_model(x, y, theta), 40)
 
-def background(image_size,offset,scattered_light):
-    N=image_size
-    return np.add([[scattered_light for i in range(N)] for j in range(N)],offset)
+
