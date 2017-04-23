@@ -14,8 +14,6 @@ class BasicFunctionsTestCase(unittest.TestCase):
 		self.assertTrue=(pm.Image_with_CCD_readout_charge(np.random.rand(50,50),40))
 	def test_MOT_bare_model(self):
 		self.assertTrue=(pm.MOT_bare_model(np.random.rand(1,50),np.random.rand(1,50),[40/2,40/2,400,40/7.5,40/9,0,0,0]))
-	def test_MOT_model(self):
-		self.assertTrue=(pm.MOT_model(np.random.rand(1,50),np.random.rand(1,50),[40/2,40/2,400,40/7.5,40/9,0,0,0]))
 	def test_likelihood(self):
 		self.assertTrue=(pm.log_likelihood([40/2,40/2,400,40/7.5,40/9,1,1,1],np.linspace(1,50,50),np.linspace(1,50,50),np.random.rand(50,50)))
 	def test_prior(self):
@@ -28,6 +26,6 @@ class BasicFunctionsTestCase(unittest.TestCase):
 	def test_load_image(self):
 		self.assertTrue(load_image(np.random.rand(50,50),50))
 	def test_sampler(self):
-		self.assertTrue(pm.sampler(np.random.rand(50,50), 8, 50, 2000,50))
+		self.assertTrue(pm.sampler(np.random.rand(50,50), 8, 50, 2000,50,[25, 25, 400, 6.6667, 5.5556, 100, 20, 20]))
 if __name__ == '__main__':
 	unittest.main()
