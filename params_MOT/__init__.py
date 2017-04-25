@@ -56,7 +56,7 @@ def MOT_bare_model(x, y, theta):
 	theta	-- model parameter array (center_x, center_y, amplitude, sigma_x, sigma_y, background_offset, sigma_m, sigma_g).
     These are parameters for the function gaussian_2d (see above) plus background offset, which is a general offset added to the overall data.
 	'''
-    center_x, center_y, amplitude, sigma_x, sigma_y, background_offset, sigma_m = theta
+    center_x, center_y, amplitude, sigma_x, sigma_y, background_offset, sigma_m, readout_charge = theta
 	
     return gaussian_2d(x, y, center_x, center_y, amplitude, sigma_x, sigma_y) + background_offset
 
@@ -93,8 +93,8 @@ def log_likelihood(theta, x, y, data):
     data	-- measurements (brightness of pixel), consisting of 2D array of size 50*50
     theta	-- model parameter array (center_x, center_y, amplitude, sigma_x, sigma_y, background_offset, sigma_m, sigma_g).
     '''
-    center_x, center_y, amplitude, sigma_x, sigma_y, background_offset, sigma_m = theta
-    MOT_model = Image_with_CCD_readout_charge(MOT_bare_model(x, y, theta), 40) # Model is the bare model plus some CCD noise added on.
+    center_x, center_y, amplitude, sigma_x, sigma_y, background_offset, sigma_m, readout_charge = theta
+    MOT_model = Image_with_CCD_readout_charge(MOT_bare_model(x, y, theta), readout_charge) # Model is the bare model plus some CCD noise added on.
 	
     
     return np.sum(-0.5*(data - MOT_model)**2/(sigma_m**2) - 0.5*np.log(2*np.pi*(sigma_m**2)))
@@ -107,13 +107,13 @@ def log_prior(theta):
     theta	-- model parameter array (center_x, center_y, amplitude, sigma_x, sigma_y, background_offset, sigma_m, sigma_g).
     """
     # unpack the model parameters
-    center_x, center_y, amplitude, sigma_x, sigma_y, background_offset, sigma_m = theta
+    center_x, center_y, amplitude, sigma_x, sigma_y, background_offset, sigma_m, readout_charge = theta
   
     # impose bounds on parameters
     # For now (the model data) impose strong bounds
-    if center_x > 30 or center_x < 20:
+    if center_x > 40 or center_x < 10:
         return -math.inf
-    if center_y > 30 or center_y < 20:
+    if center_y > 40 or center_y < 10:
         return -math.inf
     if amplitude > 1000 or amplitude < 0:
         return -math.inf
@@ -124,6 +124,8 @@ def log_prior(theta):
     if sigma_y > 1000 or sigma_y < -1000:
         return -math.inf
     if background_offset > 450 or background_offset < -500:
+        return -math.inf
+    if readout_charge > 2000 or readout_charge < 1:
         return -math.inf
     
     return 0
@@ -138,7 +140,7 @@ def log_posterior(theta, x, y, data):
     theta	-- model parameter array (center_x, center_y, amplitude, sigma_x, sigma_y, background_offset, sigma_m, sigma_g).
     '''
     
-    center_x, center_y, amplitude, sigma_x, sigma_y, background_offset, sigma_m = theta
+    center_x, center_y, amplitude, sigma_x, sigma_y, background_offset, sigma_m, readout_charge = theta
     
     return log_prior(theta) + log_likelihood(theta, x, y, data)
 
