@@ -99,3 +99,4 @@ ENV/
 /site
 
 .spyderworkspace
+sh.exe.stackdump
