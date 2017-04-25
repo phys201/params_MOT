@@ -26,7 +26,7 @@ def find_params_MOT(data_file_name,image_size,mc_params=(200,800),initial_guess=
 	data = load_data(data_file = real_data_path, delim = ',')
 	
 	image_object = load_image(data) # load image of MOT data
-	image_object.show(gauss_filter = False) # display image
+	image_object.show(gauss_filter = True) # display image
 
 	(nwalkers, nsteps) = mc_params
 	ndim = 8 # normally 8 parameters to be fitted in our model	

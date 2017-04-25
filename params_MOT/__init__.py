@@ -117,9 +117,9 @@ def log_prior(theta):
         return -math.inf
     if amplitude > 1000 or amplitude < 0:
         return -math.inf
-    if sigma_x > 40 or sigma_x < 2:
+    if sigma_x > 40 or sigma_x < 3:
         return -math.inf
-    if sigma_y > 40 or sigma_y < 2:
+    if sigma_y > 40 or sigma_y < 3:
         return -math.inf
     if sigma_y > 1000 or sigma_y < -1000:
         return -math.inf
