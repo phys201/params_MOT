@@ -56,7 +56,7 @@ def MOT_bare_model(x, y, theta):
 	theta	-- model parameter array (center_x, center_y, amplitude, sigma_x, sigma_y, background_offset, sigma_m, sigma_g).
     These are parameters for the function gaussian_2d (see above) plus background offset, which is a general offset added to the overall data.
 	'''
-    center_x, center_y, amplitude, sigma_x, sigma_y, background_offset, sigma_m, sigma_g = theta
+    center_x, center_y, amplitude, sigma_x, sigma_y, background_offset, sigma_m = theta
 	
     return gaussian_2d(x, y, center_x, center_y, amplitude, sigma_x, sigma_y) + background_offset
 
@@ -81,6 +81,7 @@ def detected(model):
     '''
     return np.random.poisson(model)
 
+
 # Functions for Bayesian inference:
 	
 def log_likelihood(theta, x, y, data):
@@ -92,13 +93,11 @@ def log_likelihood(theta, x, y, data):
     data	-- measurements (brightness of pixel), consisting of 2D array of size 50*50
     theta	-- model parameter array (center_x, center_y, amplitude, sigma_x, sigma_y, background_offset, sigma_m, sigma_g).
     '''
-    center_x, center_y, amplitude, sigma_x, sigma_y, background_offset, sigma_m, sigma_g = theta
+    center_x, center_y, amplitude, sigma_x, sigma_y, background_offset, sigma_m = theta
     MOT_model = Image_with_CCD_readout_charge(MOT_bare_model(x, y, theta), 40) # Model is the bare model plus some CCD noise added on.
 	
-    #return -0.5*(np.sum((data[x-1][y-1] - MOT_model(x, y, theta))**2/(sigma_m**2 + sigma_g**2) + np.log(sigma_m**2 + sigma_g**2)))
-    for i in x:
-        for j in y:
-            return -0.5*(np.sum((data[int(i)-1][int(j)-1] - MOT_model)**2/(sigma_m**2 + sigma_g**2) - np.log(sigma_m**2 + sigma_g**2)))
+    
+    return np.sum(-0.5*(data - MOT_model)**2/(sigma_m**2) - 0.5*np.log(2*np.pi*(sigma_m**2)))
     
 def log_prior(theta):
     """
@@ -108,7 +107,7 @@ def log_prior(theta):
     theta	-- model parameter array (center_x, center_y, amplitude, sigma_x, sigma_y, background_offset, sigma_m, sigma_g).
     """
     # unpack the model parameters
-    center_x, center_y, amplitude, sigma_x, sigma_y, background_offset, sigma_m, sigma_g = theta
+    center_x, center_y, amplitude, sigma_x, sigma_y, background_offset, sigma_m = theta
   
     # impose bounds on parameters
     # For now (the model data) impose strong bounds
@@ -116,30 +115,18 @@ def log_prior(theta):
         return -math.inf
     if center_y > 30 or center_y < 20:
         return -math.inf
-    if amplitude > 450 or amplitude < 350:
+    if amplitude > 1000 or amplitude < 0:
         return -math.inf
-    if sigma_x > 8 or sigma_x < 5:
+    if sigma_x > 40 or sigma_x < 2:
         return -math.inf
-    if sigma_y > 8 or sigma_y < 3:
+    if sigma_y > 40 or sigma_y < 2:
         return -math.inf
-    if sigma_m < 0: 
+    if sigma_y > 1000 or sigma_y < -1000:
         return -math.inf
-    if sigma_g < 0:
-        return -math.inf
-    if background_offset > 1000:
+    if background_offset > 450 or background_offset < -500:
         return -math.inf
     
-    sigma_sigma_m_Jeff_prior = 1/(sigma_m) 
-    sigma_sigma_g_Jeff_prior = 1/(sigma_g)
- 
-    sigma_x_prior = 100/(50/7.5 - sigma_x)**2
-    sigma_y_prior = 100/(50/9 - sigma_y)**2
-    
-    # Use a pretty strong prior on the sigma_x and sigma_y values (for now)
-    if math.isnan(sigma_x_prior) or math.isnan(sigma_y_prior):
-        return 0 + np.log(sigma_sigma_m_Jeff_prior) + np.log(sigma_sigma_g_Jeff_prior)
-    else:
-        return 0 + np.log(sigma_sigma_m_Jeff_prior) + np.log(sigma_sigma_g_Jeff_prior) + np.log(sigma_x_prior) + np.log(sigma_y_prior)
+    return 0
     
 def log_posterior(theta, x, y, data):
     '''
@@ -151,7 +138,7 @@ def log_posterior(theta, x, y, data):
     theta	-- model parameter array (center_x, center_y, amplitude, sigma_x, sigma_y, background_offset, sigma_m, sigma_g).
     '''
     
-    center_x, center_y, amplitude, sigma_x, sigma_y, background_offset, sigma_m, sigma_g = theta
+    center_x, center_y, amplitude, sigma_x, sigma_y, background_offset, sigma_m = theta
     
     return log_prior(theta) + log_likelihood(theta, x, y, data)
 
@@ -172,7 +159,8 @@ def sampler(data, ndim, nwalkers, nsteps, image_size, initial_guess):
     # Set up the data
     x = np.linspace(1, image_size, image_size)
     y = np.linspace(1, image_size, image_size)
-    
+    x, y = np.meshgrid(x, y)
+
     ndim = ndim
     nwalkers = nwalkers
     nsteps = nsteps
