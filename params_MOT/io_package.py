@@ -9,9 +9,12 @@ def get_data_file_path(filename = 'model_data.csv', data_dir=''):
     data_dir = os.path.join(up_dir, data_dir)
     return os.path.join(start_dir, data_dir, filename)
 
-def load_data(data_file, delim = ' '):
+def load_data(data_file, delim = ','):
     return loadtxt(data_file, delimiter = delim)
 
-def load_image(data, image_size = 50):
-    image_data = data.reshape(image_size, image_size)
-    return MOT_image.MOT_image(image_data)
+def load_time(filename):
+    return filename.split('_')[0]
+
+def load_power(filename):
+    return (filename.split('_')[2]).split('power')[0]
+
