@@ -5,6 +5,9 @@ import math
 import matplotlib.pyplot as plt
 import emcee
 import scipy.ndimage.filters as filters
+from params_MOT import MOT_image
+import pandas as pd
+from scipy.optimize import curve_fit
 
 def gaussian_1d(z, center_z, sigma_z, amplitude):
     '''
@@ -175,6 +178,121 @@ def sampler(data, ndim, nwalkers, nsteps, image_size, initial_guess):
     # run the sampler. We use iPython's %time directive to tell us 
     # how long it took (in a script, you would leave out "%time")
     sampler.run_mcmc(starting_positions, nsteps)
-    print('Done')
     
     return sampler
+
+def func_quad(x, b, m):
+    '''
+    Function which defines a quadratic equation (without the linear term)
+
+    Keyword arguments:
+    m, b		-- constants.
+    x		    -- variable.
+    '''
+    return m * x**2 + b
+
+def print_results_quad(b, m, covarianceM):
+    '''
+    Function that prints a quadratic equation, including uncertainties, given its constants and covariance matrix
+
+    Keyword arguments:
+    m, b		-- constants.
+    covarianceM -- covariance matrix.
+    '''
+    print ("The covariance matrix is \n",covarianceM)
+    print("\n")
+    print ("The fitted model, including uncertainties is (%0.4f +- %0.4f)x^2 + (%0.0f +- %0.0f)"
+           %(m, np.sqrt(covarianceM[1][1]), b, np.sqrt(covarianceM[0][0])))
+    print("\n")
+
+def quad_fit(data, x_name = "time", y_name = "sigma_x", supressMessages = True):
+    '''
+    Function that does the fitting to a quadratic function (without the linear part)
+
+    Keyword arguments:
+    data		-- panda data frame containing the relevant data
+    x_name      -- the name of the column containing the x data
+    y_name      -- the name of the column containing the y data
+    supressMessages		-- Boolean which indicates whether or not messages, including plots, should be output.
+    '''
+    x = data[x_name].as_matrix()
+    y = data[y_name].as_matrix()
+    sigma = data['sigma_' + y_name].as_matrix()
+
+    popt, cov = curve_fit(func_quad, xdata = x, ydata = y, sigma = sigma, method='lm')
+
+    b, m = popt
+    if(not supressMessages):
+        print_results_quad(b, m, cov)
+
+    return [b, m]
+
+def find_MOT_temp (q, pixel_distance_ratio, time_conversion_ratio, max_power, supressMessages):
+    '''
+    Function that returns the temperatures corresponding to each direction, as well as a total temperature.
+
+    Keyword arguments:
+    q		                -- array containing MOT_object and fitted sigma_x and sigma_y, as returned by find_params_MOT(s)
+    pixel_distance_ratio    -- value giving the conversion ratio between pixel and physical distance
+    time_conversion_ratio   -- value scaling time
+    max_power               -- maximum power; Note that the number as given by the MOT_image power attribute is a fraction of this max_power
+    supressMessages		    -- Boolean which indicates whether or not messages, including plots, should be output.
+    '''
+
+    # Create a pandas data frame storing the relevant information
+    dataMOT = pd.DataFrame(columns=['time', 'power', 'sigma_x', 'sigma_sigma_x', 'sigma_y', 'sigma_sigma_y'])
+
+    for i in range(len(q)):
+        dataMOT.loc[i] = [time_conversion_ratio * float(q[i][0].time), max_power/float(q[i][0].power),
+                          pixel_distance_ratio * q[i][1]['sigma_x'][0.50], \
+                          pixel_distance_ratio * np.abs(
+                              q[i][1]['sigma_x'][0.50] - (q[i][1]['sigma_x'][0.16] + q[i][1]['sigma_x'][0.84]) / 2), \
+                          pixel_distance_ratio * q[i][1]['sigma_y'][0.50], \
+                          pixel_distance_ratio * np.abs(
+                              q[i][1]['sigma_y'][0.50] - (q[i][1]['sigma_y'][0.16] + q[i][1]['sigma_y'][0.84]) / 2)]
+
+
+    dataMOT['sigma_x_squared'] = dataMOT['sigma_x']**2
+    dataMOT['sigma_sigma_x_squared'] = 2*dataMOT['sigma_sigma_x']
+    dataMOT['sigma_y_squared'] = dataMOT['sigma_y']**2
+    dataMOT['sigma_sigma_y_squared'] = 2*dataMOT['sigma_sigma_y']
+
+    if(not supressMessages):
+        print(dataMOT)
+
+    quad_fit_sigma_x = quad_fit(dataMOT, x_name = "time", y_name='sigma_x_squared', supressMessages = supressMessages)
+    quad_fit_sigma_y = quad_fit(dataMOT, x_name="time", y_name='sigma_y_squared', supressMessages=supressMessages)
+
+    # Output plots for the fits
+    if(not supressMessages):
+        dataMOT.iloc[:].plot(x='time', y='sigma_x_squared', kind='scatter', yerr='sigma_sigma_x_squared', s=30)
+        _ = plt.xlabel('time (s)')
+        _ = plt.ylabel('sigma_x^2 (m^2)')
+        _ = plt.ylim([0.000001, 0.00001])
+        _ = plt.xlim([0, 0.005])
+        _ = plt.plot(np.linspace(0, 0.005, 10), quad_fit_sigma_x[1] * np.linspace(0, 0.005, 10) ** 2 + quad_fit_sigma_x[0])
+        _ = plt.title("Quadratic fit to data for sigma_x")
+        _ = plt.show()
+
+        dataMOT.iloc[:].plot(x='time', y='sigma_y_squared', kind='scatter', yerr='sigma_sigma_y_squared', s=30)
+        _ = plt.xlabel('time (s)')
+        _ = plt.ylabel('sigma_y^2 (m^2)')
+        _ = plt.ylim([0.000001, 0.00001])
+        _ = plt.xlim([0, 0.005])
+        _ = plt.plot(np.linspace(0, 0.005, 10), quad_fit_sigma_y[1] * np.linspace(0, 0.005, 10) ** 2 + quad_fit_sigma_y[0])
+        _ = plt.title("Quadratic fit to data for sigma_y")
+        _ = plt.show()
+
+    # Define constants
+    m = 9.80 * 10 ** (-26)
+    K_b = 1.38 * 10 ** (-23)
+
+    # The temperatures:
+    T_x = quad_fit_sigma_x[1]*m/K_b
+    T_y = quad_fit_sigma_y[1]*m/K_b
+    T = T_x**(2/3) * T_y**(1/3)
+
+    if(not supressMessages):
+        print("The fitted temepratures: T_x = %f mK, T_y = %f mK, T = %f mK" %(10**3 * T_x, 10**3 * T_y, 10**3 * T))
+
+    return [T_x, T_y, T]

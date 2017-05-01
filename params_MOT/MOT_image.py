@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy.ndimage.filters as filters
+from params_MOT import MOT_image
 
 def gaussian_2d(x, y, center_x, center_y, amplitude, sigma_x, sigma_y):
     return amplitude * np.exp(-(x - center_x) ** 2 / (2 * sigma_x ** 2)) * np.exp(
@@ -16,10 +17,11 @@ class MOT_image:
     '''
 
     #def __init__(self, data, time):
-    def __init__(self, data, image_size = 50):
+    def __init__(self, data, time, power, image_size = 50):
         data.reshape(image_size, image_size)
         self.data = data
-        #self.time = time
+        self.time = time
+        self.power = power
 
     def show(self, image_size=50, gauss_filter=False):
 
