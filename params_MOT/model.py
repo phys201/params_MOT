@@ -12,7 +12,7 @@ import params_MOT as pm
 from params_MOT import MOT_image
 
 ## Performing Bayesian inference using MCMC for marginalization
-def find_params_MOT(data_file_name,image_size,mc_params=(200,800),initial_guess=[25, 25, 400, 6.6667, 5.5556, 100, 20, 20], supressMessages = False):
+def find_params_MOT(data_file_name, data_dir='data', image_size = 50, mc_params=(200,800),initial_guess=[25, 25, 400, 6.6667, 5.5556, 100, 20, 20], supressMessages = False):
 	'''
 	Function to load data based on the file name specified in data_file_name, find parameters based on Bayesian inference using MCMC for parameter marginalization.
 
@@ -20,6 +20,7 @@ def find_params_MOT(data_file_name,image_size,mc_params=(200,800),initial_guess=
 
 	Keyword arguments:
 	data_file_name		-- String denoting filename of data
+	data_dir			-- String denoting name of data directory
 	image_size			-- Size of MOT image (which is assumed to be a square).
 	mc_params			-- duplet of MCMC parameters: (number of walkers, number of steps).
 	initial_guess		-- tuple of initial MCMC guesses, consisting of (center_x, center_y, amplitude, sigma_x, sigma_y, background_offset, sigma_m, sigma_g).
@@ -28,7 +29,7 @@ def find_params_MOT(data_file_name,image_size,mc_params=(200,800),initial_guess=
 
 	if(not supressMessages):
 		print('Loading data...')
-	real_data_path = get_data_file_path(data_file_name)
+	real_data_path = get_data_file_path(data_file_name, data_dir)
 	data = load_data(data_file = real_data_path, delim = ',')
 
 	image_object = MOT_image.MOT_image(data, load_time(data_file_name), load_power(data_file_name), image_size = image_size) # load image of MOT data
@@ -124,12 +125,13 @@ def gen_model_data(data_file_name, image_size, theta, ccdnoise, background_lv):
 	np.savetxt(data_file_name, image, delimiter=" ")
 	return image
 
-def find_params_MOTs(list_data_files, image_size, mc_params, initial_guess, supressMessages = True ):
+def find_params_MOTs(list_data_files, data_dir='data', image_size = 50, mc_params=(200,800),initial_guess=[25, 25, 400, 6.6667, 5.5556, 100, 20, 20], supressMessages = True):
 	'''
 		Function to return MOT_image objects and their inferred sigma_x and sigma_y for a list of files.
 
 		Keyword arguments:
 		list_data_files		-- Array of data file names for which we find the parameters.
+		data_dir			-- String denoting name of data directory
 		image_size			-- Size of MOT image (which is assumed to be a square).
 		mc_params			-- duplet of MCMC parameters: (number of walkers, number of steps).
 		initial_guess		-- tuple of initial MCMC guesses, consisting of (center_x, center_y, amplitude, sigma_x, sigma_y, background_offset, sigma_m, sigma_g).
@@ -138,6 +140,6 @@ def find_params_MOTs(list_data_files, image_size, mc_params, initial_guess, supr
 
 	q = []
 	for f in list_data_files:
-		q.append(find_params_MOT(f, image_size, mc_params, initial_guess, supressMessages=supressMessages))
+		q.append(find_params_MOT(f, data_dir, image_size, mc_params, initial_guess, supressMessages))
 
 	return q

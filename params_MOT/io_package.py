@@ -2,6 +2,10 @@ import os
 from numpy import loadtxt
 from params_MOT import MOT_image
 
+# Data file title convention:
+#       '(time in ms)_(series number)_(fraction of maximum laser power)power.csv'
+# Example: '3_1_16power.csv'
+
 def get_data_file_path(filename = 'model_data.csv', data_dir=''):
     start = os.path.abspath(__file__)
     start_dir = os.path.dirname(start)
@@ -13,8 +17,10 @@ def load_data(data_file, delim = ','):
     return loadtxt(data_file, delimiter = delim)
 
 def load_time(filename):
-    return filename.split('_')[0]
+        return filename.split('_')[0]
 
 def load_power(filename):
-    return (filename.split('_')[2]).split('power')[0]
-
+    try:
+        return (filename.split('_')[2]).split('power')[0]
+    except IndexError:
+        raise ValueError('Check that your data file name respects the convention.')
