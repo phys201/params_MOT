@@ -100,3 +100,6 @@ ENV/
 
 .spyderworkspace
 sh.exe.stackdump
+
+# Data files
+*.csv
