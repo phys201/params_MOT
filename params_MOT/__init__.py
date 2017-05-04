@@ -92,8 +92,8 @@ def log_likelihood(theta, x, y, data):
     Function to define log-likelihood for Bayesian inference.
     
     Keyword arguments:
-    x, y	-- independent data (arrays of size 50)
-    data	-- measurements (brightness of pixel), consisting of 2D array of size 50*50
+    x, y	-- independent data (arrays of size 50 for the 50x50 pixel image size)
+    data	-- measurements (brightness of pixel), consisting of 2D array of size image_size*image_size
     theta	-- model parameter array (center_x, center_y, amplitude, sigma_x, sigma_y, background_offset, sigma_m, sigma_g).
     '''
     center_x, center_y, amplitude, sigma_x, sigma_y, background_offset, sigma_m, readout_charge = theta
@@ -111,24 +111,30 @@ def log_prior(theta):
     """
     # unpack the model parameters
     center_x, center_y, amplitude, sigma_x, sigma_y, background_offset, sigma_m, readout_charge = theta
-  
-    # impose bounds on parameters
-    # For now (the model data) impose strong bounds
-    if center_x > 40 or center_x < 10:
+
+    # Work with a generally uninformative prior:
+    # This means simply impose boundaries that make physical sense (amplitude > 0 or readout_charge > 1)
+    # or limited by the apparatus (in a sense also physical; for example the centers or sigmas should be within the confines of the
+    # CCD camera, i.e., smaller than image_size, which is taken to be 50)
+
+    # TO DO: have a set of parameters that describe the apparatus also gets passed along, like theta. This way we can set limits on
+    # the priors in a more general way (for ex, use the image_size variable to define the limits of the centers or sigmas)
+
+    if center_x > 50 or center_x < 0: # Limited by CCD size
         return -math.inf
-    if center_y > 40 or center_y < 10:
+    if center_y > 50 or center_y < 0: # Limited by CCD size
         return -math.inf
-    if amplitude > 1000 or amplitude < 0:
+    if amplitude > 1000 or amplitude < 0: # Limited CCD saturation limit
         return -math.inf
-    if sigma_x > 40 or sigma_x < 3:
+    if sigma_x > 50 or sigma_x < 0: # Limited by CCD size
         return -math.inf
-    if sigma_y > 40 or sigma_y < 3:
+    if sigma_y > 50 or sigma_y < 0: # Limited by CCD size
         return -math.inf
-    if sigma_y > 1000 or sigma_y < -1000:
+    if sigma_m > 1000 or sigma_m < -1000: # Limited CCD saturation limit
         return -math.inf
-    if background_offset > 450 or background_offset < -500:
+    if background_offset > 450 or background_offset < -500: # Limited CCD saturation limit
         return -math.inf
-    if readout_charge > 2000 or readout_charge < 1:
+    if readout_charge > 2000 or readout_charge < 1: # Limited CCD saturation limit
         return -math.inf
     
     return 0
@@ -138,8 +144,8 @@ def log_posterior(theta, x, y, data):
     Function to return log of posterior probability distribution. From Bayes' theorem we obtain that the posterior probability is the product of the prior and likelihood, so for the log posterior we sum the log of the prior and log of the likelihood.
 	
     Keyword arguments:
-    x, y	-- independent data (arrays of size 50)
-    data	-- measurements (brightness of pixel), consisting of 2D array of size 50*50
+    x, y	-- independent data (arrays of size 50 for the 50x50 pixel image size)
+    data	-- measurements (brightness of pixel), consisting of 2D array of size image_size*image_size
     theta	-- model parameter array (center_x, center_y, amplitude, sigma_x, sigma_y, background_offset, sigma_m, sigma_g).
     '''
     
