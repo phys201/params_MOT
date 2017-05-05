@@ -120,15 +120,17 @@ def log_prior(theta):
     # TO DO: have a set of parameters that describe the apparatus also gets passed along, like theta. This way we can set limits on
     # the priors in a more general way (for ex, use the image_size variable to define the limits of the centers or sigmas)
 
-    if center_x > 50 or center_x < 0: # Limited by CCD size
+    # NOTE: In practice we observed occasional "bad" sigma fits if we actually choose the range [0, 50]. Go with [3, 40] instead.
+
+    if center_x > 40 or center_x < 3: # Limited by CCD size
         return -math.inf
-    if center_y > 50 or center_y < 0: # Limited by CCD size
+    if center_y > 40 or center_y < 3: # Limited by CCD size
         return -math.inf
     if amplitude > 1000 or amplitude < 0: # Limited CCD saturation limit
         return -math.inf
-    if sigma_x > 50 or sigma_x < 0: # Limited by CCD size
+    if sigma_x > 40 or sigma_x < 3: # Limited by CCD size
         return -math.inf
-    if sigma_y > 50 or sigma_y < 0: # Limited by CCD size
+    if sigma_y > 40 or sigma_y < 3: # Limited by CCD size
         return -math.inf
     if sigma_m > 1000 or sigma_m < -1000: # Limited CCD saturation limit
         return -math.inf
