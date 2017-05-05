@@ -12,7 +12,7 @@ import params_MOT as pm
 from params_MOT import MOT_image
 
 ## Performing Bayesian inference using MCMC for marginalization
-def find_params_MOT(data_file_name, data_dir='data', image_size = 50, mc_params=(200, 1000, 400),initial_guess=[25, 25, 400, 6.6667, 5.5556, 100, 20, 20], supressMessages = False):
+def find_params_MOT(data_file_name, data_dir='data', image_size = 50, mc_params=(200, 1000, 400),initial_guess=[25, 25, 400, 6.6667, 5.5556, 100, 20, 20], suppressMessages = False):
 	'''
 	Function to load data based on the file name specified in data_file_name, find parameters based on Bayesian inference using MCMC for parameter marginalization.
 
@@ -27,34 +27,34 @@ def find_params_MOT(data_file_name, data_dir='data', image_size = 50, mc_params=
 						-- steps = length of said traces
 						-- burn_in_steps = steps after which the trace settles around a value
 	initial_guess		-- tuple of initial MCMC guesses, consisting of (center_x, center_y, amplitude, sigma_x, sigma_y, background_offset, sigma_m, sigma_g).
-	supressMessages		-- Boolean which indicates whether or not messages, including plots, should be output.
+	suppressMessages		-- Boolean which indicates whether or not messages, including plots, should be output.
 	'''
 
-	if(not supressMessages):
+	if(not suppressMessages):
 		print('Loading data...')
 	real_data_path = get_data_file_path(data_file_name, data_dir)
 	data = load_data(data_file = real_data_path, delim = ',')
 
 	image_object = MOT_image.MOT_image(data, load_time(data_file_name), load_power(data_file_name), image_size = image_size) # load image of MOT data
-	if (not supressMessages):
+	if (not suppressMessages):
 		image_object.show(gauss_filter = True) # display image
 
-	if (not supressMessages):
+	if (not suppressMessages):
 		print("The life time of and the laser power used on the MOT are %s ms and 1/%s (fractional units out of the max power, which is 60mW per beam)" %(image_object.time, image_object.power))
 
 
 	(nwalkers, nsteps, burn_in_steps) = mc_params
 	ndim = 8 # normally 8 parameters to be fitted in our model	
 
-	if (not supressMessages):
-		print('Data loaded. Setting up emcee sampler...')
+	if (not suppressMessages):
+		print('Data loaded. Running emcee sampler...')
 	emcee_sample = pm.sampler(data, ndim, nwalkers, nsteps,image_size,initial_guess)
 
-	if (not supressMessages):
-		print('Emcee sampler setup finished. Running MCMC...')
+	if (not suppressMessages):
+		print('Emcee finished. Generating plots...')
 
 	# Show the results:
-	if (not supressMessages):
+	if (not suppressMessages):
 		fig, (ax_center_x, ax_center_y, ax_amplitude, ax_sigma_x, ax_sigma_y, ax_background_offset, ax_sigma_m,ax_readout_charge) = plt.subplots(8)
 		ax_center_x.set(ylabel='center_x')
 		ax_center_y.set(ylabel='center_y')
@@ -87,7 +87,7 @@ def find_params_MOT(data_file_name, data_dir='data', image_size = 50, mc_params=
 	sigma_x = q['sigma_x'][0.50]
 	sigma_y = q['sigma_y'][0.50]
 
-	if (not supressMessages):
+	if (not suppressMessages):
 		print(q)
 	
 		joint_kde = sns.jointplot(x='sigma_x', y='sigma_y', data=parameter_samples, kind='kde')
@@ -125,10 +125,10 @@ def gen_model_data(data_file_name, image_size, theta, ccdnoise, background_lv):
 	plt.colorbar()
 
 	# Save generated image to csv file:
-	np.savetxt(data_file_name, image, delimiter=" ")
+	np.savetxt(data_file_name, image, delimiter=",")
 	return image
 
-def find_params_MOTs(list_data_files, data_dir='data', image_size = 50, mc_params=(200, 1000, 400),initial_guess=[25, 25, 400, 6.6667, 5.5556, 100, 20, 20], supressMessages = True):
+def find_params_MOTs(list_data_files, data_dir='data', image_size = 50, mc_params=(200, 1000, 400),initial_guess=[25, 25, 400, 6.6667, 5.5556, 100, 20, 20], suppressMessages = True):
 	'''
 		Function to return MOT_image objects and their inferred sigma_x and sigma_y for a list of files.
 
@@ -141,11 +141,11 @@ def find_params_MOTs(list_data_files, data_dir='data', image_size = 50, mc_param
 							-- steps = length of said traces
 							-- burn_in_steps = steps after which the trace settles around a value
 		initial_guess		-- tuple of initial MCMC guesses, consisting of (center_x, center_y, amplitude, sigma_x, sigma_y, background_offset, sigma_m, sigma_g).
-		supressMessages		-- Boolean which indicates whether or not messages, including plots, should be output.
+		suppressMessages		-- Boolean which indicates whether or not messages, including plots, should be output.
 	'''
 
 	q = []
 	for f in list_data_files:
-		q.append(find_params_MOT(f, data_dir, image_size, mc_params, initial_guess, supressMessages))
+		q.append(find_params_MOT(f, data_dir, image_size, mc_params, initial_guess, suppressMessages))
 
 	return q
