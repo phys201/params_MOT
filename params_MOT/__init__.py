@@ -8,6 +8,7 @@ import scipy.ndimage.filters as filters
 from params_MOT import MOT_image
 import pandas as pd
 from scipy.optimize import curve_fit
+from params_MOT.model import *
 
 def gaussian_1d(z, center_z, sigma_z, amplitude):
     '''
@@ -261,9 +262,9 @@ def find_MOT_temp (q, pixel_distance_ratio, time_conversion_ratio, max_power, su
 
 
     dataMOT['sigma_x_squared'] = dataMOT['sigma_x']**2
-    dataMOT['sigma_sigma_x_squared'] = 2*dataMOT['sigma_sigma_x']
+    dataMOT['sigma_sigma_x_squared'] = dataMOT['sigma_sigma_x']**2
     dataMOT['sigma_y_squared'] = dataMOT['sigma_y']**2
-    dataMOT['sigma_sigma_y_squared'] = 2*dataMOT['sigma_sigma_y']
+    dataMOT['sigma_sigma_y_squared'] = dataMOT['sigma_sigma_y']**2
 
     if(not suppressMessages):
         print(dataMOT)
@@ -276,7 +277,7 @@ def find_MOT_temp (q, pixel_distance_ratio, time_conversion_ratio, max_power, su
         dataMOT.iloc[:].plot(x='time', y='sigma_x_squared', kind='scatter', yerr='sigma_sigma_x_squared', s=30)
         _ = plt.xlabel('time (s)')
         _ = plt.ylabel('sigma_x^2 (m^2)')
-        _ = plt.ylim([0.000001, 0.00001])
+        _ = plt.ylim([0.0000001, 0.000015])
         _ = plt.xlim([0, 0.005])
         _ = plt.plot(np.linspace(0, 0.005, 10), quad_fit_sigma_x[1] * np.linspace(0, 0.005, 10) ** 2 + quad_fit_sigma_x[0])
         _ = plt.title("Quadratic fit to data for sigma_x")
@@ -285,7 +286,7 @@ def find_MOT_temp (q, pixel_distance_ratio, time_conversion_ratio, max_power, su
         dataMOT.iloc[:].plot(x='time', y='sigma_y_squared', kind='scatter', yerr='sigma_sigma_y_squared', s=30)
         _ = plt.xlabel('time (s)')
         _ = plt.ylabel('sigma_y^2 (m^2)')
-        _ = plt.ylim([0.000001, 0.00001])
+        _ = plt.ylim([0.0000001, 0.000015])
         _ = plt.xlim([0, 0.005])
         _ = plt.plot(np.linspace(0, 0.005, 10), quad_fit_sigma_y[1] * np.linspace(0, 0.005, 10) ** 2 + quad_fit_sigma_y[0])
         _ = plt.title("Quadratic fit to data for sigma_y")
@@ -354,14 +355,10 @@ def temp_vs_power(data_files, data_dir = 'data', image_size = 50, mc_params=(200
 
 
     for i in range(len(data_files)):
-
-        print(i)
         q = find_params_MOTs(data_files[i], data_dir, image_size, mc_params, initial_guess, suppressMessages = True)
-        print(q)
         power = max_power / float(q[0][0].power)
         temp = find_MOT_temp(q, pixel_distance_ratio=0.4 * 10 ** (-3), time_conversion_ratio=10 ** (-3), max_power=60 * 10 ** (-3), suppressMessages=True)
 
-        print(temp)
         dataPowerTemp.loc[i] = [power, temp[0], temp[1], temp[2]]
 
     return dataPowerTemp
