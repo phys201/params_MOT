@@ -213,7 +213,7 @@ def print_results_quad(b, m, covarianceM):
            %(m, np.sqrt(covarianceM[1][1]), b, np.sqrt(covarianceM[0][0])))
     print("\n")
 
-def quad_fit(data, x_name = "time", y_name = "sigma_x", supressMessages = True):
+def quad_fit(data, x_name = "time", y_name = "sigma_x", suppressMessages = True):
     '''
     Function that does the fitting to a quadratic function (without the linear part)
 
@@ -221,7 +221,7 @@ def quad_fit(data, x_name = "time", y_name = "sigma_x", supressMessages = True):
     data		-- panda data frame containing the relevant data
     x_name      -- the name of the column containing the x data
     y_name      -- the name of the column containing the y data
-    supressMessages		-- Boolean which indicates whether or not messages, including plots, should be output.
+    suppressMessages		-- Boolean which indicates whether or not messages, including plots, should be output.
     '''
     x = data[x_name].as_matrix()
     y = data[y_name].as_matrix()
@@ -230,12 +230,12 @@ def quad_fit(data, x_name = "time", y_name = "sigma_x", supressMessages = True):
     popt, cov = curve_fit(func_quad, xdata = x, ydata = y, sigma = sigma, method='lm')
 
     b, m = popt
-    if(not supressMessages):
+    if(not suppressMessages):
         print_results_quad(b, m, cov)
 
     return [b, m]
 
-def find_MOT_temp (q, pixel_distance_ratio, time_conversion_ratio, max_power, supressMessages):
+def find_MOT_temp (q, pixel_distance_ratio, time_conversion_ratio, max_power, suppressMessages):
     '''
     Function that returns the temperatures corresponding to each direction, as well as a total temperature.
 
@@ -244,7 +244,7 @@ def find_MOT_temp (q, pixel_distance_ratio, time_conversion_ratio, max_power, su
     pixel_distance_ratio    -- value giving the conversion ratio between pixel and physical distance
     time_conversion_ratio   -- value scaling time
     max_power               -- maximum power; Note that the number as given by the MOT_image power attribute is a fraction of this max_power
-    supressMessages		    -- Boolean which indicates whether or not messages, including plots, should be output.
+    suppressMessages		    -- Boolean which indicates whether or not messages, including plots, should be output.
     '''
 
     # Create a pandas data frame storing the relevant information
@@ -265,14 +265,14 @@ def find_MOT_temp (q, pixel_distance_ratio, time_conversion_ratio, max_power, su
     dataMOT['sigma_y_squared'] = dataMOT['sigma_y']**2
     dataMOT['sigma_sigma_y_squared'] = 2*dataMOT['sigma_sigma_y']
 
-    if(not supressMessages):
+    if(not suppressMessages):
         print(dataMOT)
 
-    quad_fit_sigma_x = quad_fit(dataMOT, x_name = "time", y_name='sigma_x_squared', supressMessages = supressMessages)
-    quad_fit_sigma_y = quad_fit(dataMOT, x_name="time", y_name='sigma_y_squared', supressMessages=supressMessages)
+    quad_fit_sigma_x = quad_fit(dataMOT, x_name = "time", y_name='sigma_x_squared', suppressMessages = suppressMessages)
+    quad_fit_sigma_y = quad_fit(dataMOT, x_name="time", y_name='sigma_y_squared', suppressMessages=suppressMessages)
 
     # Output plots for the fits
-    if(not supressMessages):
+    if(not suppressMessages):
         dataMOT.iloc[:].plot(x='time', y='sigma_x_squared', kind='scatter', yerr='sigma_sigma_x_squared', s=30)
         _ = plt.xlabel('time (s)')
         _ = plt.ylabel('sigma_x^2 (m^2)')
@@ -300,7 +300,7 @@ def find_MOT_temp (q, pixel_distance_ratio, time_conversion_ratio, max_power, su
     T_y = quad_fit_sigma_y[1]*m/K_b
     T = T_x**(2/3) * T_y**(1/3)
 
-    if(not supressMessages):
+    if(not suppressMessages):
         print("The fitted temepratures: T_x = %f mK, T_y = %f mK, T = %f mK" %(10**3 * T_x, 10**3 * T_y, 10**3 * T))
 
     return [T_x, T_y, T]
