@@ -1,13 +1,16 @@
 import unittest
 import numpy as np
 import params_MOT as pm
+import pandas as pd
 from params_MOT.io_package import *
 from params_MOT.model import *
 import os
 
 # Variables to be used in tests:
 image_size = 10
-theta = [image_size/2,image_size/2,400,image_size/7.5,image_size/9,1,1,1]
+sigma_x = image_size/7.5
+sigma_y = image_size/9
+theta = [image_size/2,image_size/2,400,sigma_x,sigma_y,1,1,1]
 x = np.linspace(1,image_size,image_size)
 y = np.linspace(1,image_size,image_size)
 data = np.random.rand(image_size,image_size)
@@ -62,9 +65,19 @@ class TestParams_MOT(unittest.TestCase):
 		self.assertTrue(pm.sampler(image, 8, 50, 200,image_size,initial_guess))
 		os.remove(filename)
 	def test_find_params_MOT(self):
-		'''test_find_params_MOT: This is a more extensive test than test_sampler. It generates artificial model data, sets up and runs the MCMC sampler, and returns back the parameters of the model.'''
+		'''test_find_params_MOT: This is a more extensive test than test_sampler. It loads specific data, sets up and runs the MCMC sampler, and returns back the parameters of the model. It also checks for whether they are close to the known values of what they should be. The data is generated using gen_model_data. The test checks whether the MCMC successfully rediscovers the original sigma_x, sigma_y parameters that the data was generated with. This test should take about a minute to run.'''
+		image_size = 50 # Set image_size to be large, because otherwise the MCMC won't run as reliably
+		sigma_x = image_size/7.5
+		sigma_y = image_size/9
+		theta = [image_size/2,image_size/2,400,sigma_x,sigma_y,1,1,1]
 		gen_model_data(filename,image_size,theta,40,10000)
-		self.assertTrue(find_params_MOT(filename,'.',image_size,(50,200,50),initial_guess,suppressMessages=False))
+		q=find_params_MOT(filename,'.',image_size,(200,1000,200),initial_guess,suppressMessages=True) # Messages are suppressed as we don't need to plot anything
+		os.remove(filename)
+		sigma_x_res=q[1].iloc[1]['sigma_x']
+		sigma_y_res=q[1].iloc[1]['sigma_y']
+		self.assertAlmostEqual(sigma_x_res,sigma_x,1)
+		self.assertAlmostEqual(sigma_y_res,sigma_y,1)
+		
 		
 if __name__ == '__main__':
 	unittest.main()
